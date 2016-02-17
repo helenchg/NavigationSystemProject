@@ -1,0 +1,266 @@
+Location
+Rating
+Cost
+Coordinates X
+Coordinates Y
+Road1
+Road2
+Road3
+X
+
+Las Vegas
+5
+1
+400
+400
+Reno
+North Las Vegas
+Henderson
+Pahrump
+Boulder City
+Lake Mead National Recreation Area
+Red Rock Canyon
+Hoover Dam
+X
+
+Reno
+1.6
+1
+50
+200
+Las Vegas
+Sparks
+Incline Village
+Lehman Cave
+Humboldt-Toiyabe National Forest
+Spring Mountain Ranch State Park
+Lake Tahoe Nevada State Park
+X
+
+Henderson
+1
+1
+450
+400
+Las Vegas
+North Las Vegas
+Laughlin
+Boulder City
+Lake Mead National Recreation Area
+Valley of Fire State Park
+Hoover Dam
+X
+
+Sparks
+3.5
+1
+100
+200
+Reno
+Carson City
+Elko
+X
+
+Incline Village
+2.9
+1
+50
+225
+Reno
+Carson City
+Stateline
+X
+
+North Las Vegas
+0.8
+1
+400
+350
+Las Vegas
+Henderson
+Elko
+Laughlin
+Red Rock Canyon
+X
+
+Carson City
+1.1
+1
+100
+250
+Sparks
+Incline Village
+Elko
+Stateline
+Lake Tahoe Nevada State Park
+X
+
+Stateline
+4.7
+1
+150
+275
+Incline Village
+Carson City
+Pahrump
+X
+
+Laughlin
+4.9
+1
+475
+475
+Boulder City
+Henderson
+North Las Vegas
+Pahrump
+Valley of Fire State Park
+X
+
+Elko
+4
+1
+400
+100
+North Las Vegas
+Sparks
+Carson City
+Lehman Cave
+Great Basin National Park
+Humboldt-Toiyabe National Forest
+X
+
+Boulder City
+0.8
+1
+475
+400
+Laughlin
+Henderson
+Las Vegas
+Spring Mountain Ranch State Park
+Valley of Fire State Park
+X
+
+Pahrump
+2.4
+1
+350
+350
+Stateline
+Las Vegas
+Laughlin
+X
+
+Great Basin National Park
+4.5
+2
+250
+450
+Lehman Cave
+Elko
+X
+
+Lake Mead National Recreation Area
+0.6
+2
+475
+350
+Hoover Dam
+Las Vegas
+Henderson
+X
+
+Death Valley National Park
+0.1
+2
+250
+365
+Ash Meadows National Wildlife Refuge
+Humboldt-Toiyabe National Forest
+Lake Tahoe Nevada State Park
+X
+
+Red Rock Canyon
+1.2
+2
+375
+350
+North Las Vegas
+Las Vegas
+Spring Mountain Ranch State Park
+Ash Meadows National Wildlife Refuge
+X
+
+Humboldt-Toiyabe National Forest
+2.6
+2
+250
+250
+Death Valley National Park
+Reno
+Ash Meadows National Wildlife Refuge
+Elko
+X
+
+Lake Tahoe Nevada State Park
+1.1
+2
+25
+250
+Death Valley National Park
+Reno
+Carson City
+X
+
+Lehman Cave
+2.2
+2
+250
+475
+Great Basin National Park
+Elko
+Reno
+X
+
+Spring Mountain Ranch State Park
+2.7
+2
+375
+375
+Red Rock Canyon
+Reno
+Boulder City
+X
+
+Valley of Fire State Park
+3.8
+2
+450
+350
+Henderson
+Laughlin
+Boulder City
+X
+
+Ash Meadows National Wildlife Refuge
+0.6
+2
+350
+250
+Death Valley National Park
+Humboldt-Toiyabe National Forest
+Red Rock Canyon
+X
+
+Hoover Dam
+3.4
+2
+475
+400
+Lake Mead National Recreation Area
+Las Vegas
+Henderson
+X
+
+ end 
