@@ -1,13 +1,18 @@
 import java.awt.Color;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.SystemColor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
@@ -85,18 +90,7 @@ public class GUI {
 			public void mouseClicked(MouseEvent e) {
 				if((e.getX() >= 105 && e.getX() <= 267) && (e.getY() >= 350 && e.getY() <= 500)){
 					System.out.println("X: " + e.getX() + "Y: " + e.getY());
-					frameNevada = new JFrame("Nevada");
-					frameNevada.setResizable(false);
-					frameNevada.getContentPane().setForeground(Color.LIGHT_GRAY);
-					frameNevada.getContentPane().setBackground(SystemColor.control);
-					frameNevada.setBounds(100, 100, 500, 700);
-					frameNevada.setVisible(true);
-//					drawCities();
-					ImageIcon imageNevada = new ImageIcon("src\\nevadau.png");
-					JLabel nevadaLabel = new JLabel(imageNevada);
-					nevadaLabel.setBounds(10, 10, 400, 400);
-					nevadaLabel.setVisible(true);
-					frameNevada.getContentPane().add(nevadaLabel);
+					drawCities();
 				}
 			}
 		});
@@ -105,7 +99,7 @@ public class GUI {
 		frameMap.getContentPane().setBackground(SystemColor.control);
 		frameMap.setBounds(100, 100, 1400, 880);
 //		frameMap.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		ImageIcon image = new ImageIcon("src\\usmap.png");
+		ImageIcon image = new ImageIcon("src\\usnevada.png");
 		JLabel mapLabel = new JLabel(image);
 		mapLabel.setBounds(10, 10, 400, 400);
 		mapLabel.setVisible(true);
@@ -116,7 +110,7 @@ public class GUI {
 		frame.setResizable(false);
 		frame.getContentPane().setForeground(Color.LIGHT_GRAY);
 		frame.getContentPane().setBackground(SystemColor.control);
-		frame.setBounds(100, 100, 600, 900);
+		frame.setBounds(100, 100, 600, 1000);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		// INTERESTING PLACES FRAME
@@ -131,6 +125,28 @@ public class GUI {
 		JLabel lblTitle = new JLabel("M.E.T Navigation System");
 		lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
 		lblTitle.setFont(new Font("Tahoma", Font.BOLD, 15));
+		JLabel lblDevelopedByElena = new JLabel("Developed by: Elena Chong, Tim McDaniel, and Mitchell Murray");
+		GroupLayout gl_panelTitle = new GroupLayout(panelTitle);
+		gl_panelTitle.setHorizontalGroup(
+			gl_panelTitle.createParallelGroup(Alignment.LEADING)
+				.addGroup(gl_panelTitle.createSequentialGroup()
+					.addGroup(gl_panelTitle.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelTitle.createSequentialGroup()
+							.addGap(96)
+							.addComponent(lblDevelopedByElena))
+						.addGroup(gl_panelTitle.createSequentialGroup()
+							.addGap(198)
+							.addComponent(lblTitle)))
+					.addContainerGap(249, Short.MAX_VALUE))
+		);
+		gl_panelTitle.setVerticalGroup(
+			gl_panelTitle.createParallelGroup(Alignment.LEADING)
+				.addGroup(Alignment.TRAILING, gl_panelTitle.createSequentialGroup()
+					.addComponent(lblTitle)
+					.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addComponent(lblDevelopedByElena))
+		);
+		panelTitle.setLayout(gl_panelTitle);
 		// Trip Planner Panel
 		JPanel panelTripPlanner = new JPanel();
 		panelTripPlanner.setBackground(Color.LIGHT_GRAY);		
@@ -145,6 +161,11 @@ public class GUI {
 		JPanel panelAlternatives = new JPanel();
 		panelAlternatives.setBackground(SystemColor.controlHighlight);
 		panelAlternatives.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		// Via Panel
+		JPanel panelVia = new JPanel();
+		panelVia.setBackground(SystemColor.controlHighlight);
+		panelVia.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		
 		
 		/**
 		 * This block below deals with the GUI part of selecting current location, destination and features.	
@@ -186,7 +207,7 @@ public class GUI {
 		JCheckBox chckbxAlternativeRoutes = new JCheckBox("Alternative routes");
 		JCheckBox chckbxInterestingPlaces = new JCheckBox("Interesting places");
 		JCheckBox chckbxShowMap = new JCheckBox("Show Map");
-
+		
 		// DISPLAY INFORMATION AND CALCULATION ON JPANEL RESULT BOX
 		// Search Button Action!
 		JButton btnSearch = new JButton("Search");
@@ -198,20 +219,55 @@ public class GUI {
 					panelResultBox.updateUI();
 					panelAlternatives.removeAll();
 					panelAlternatives.updateUI();
+					panelVia.removeAll();
+					panelVia.updateUI();
 					
-					// Strings
+					// Shortest Path calculation
 					// TODO: Bold A and B
 					begin = String.valueOf(comboBoxCurrentCity.getSelectedItem());
 					end = comboBoxDestinationCity.getSelectedItem().toString();
+					
+					Graph.Node nodeA = map.nodes.get(begin);
+					Graph.Node nodeB = map.nodes.get(end);
+					ArrayList<Graph.Node> visitedNodes = map.shortestPath(nodeA, nodeB);
+					ArrayList<String> visited = new ArrayList<>();
+					for(int i = visitedNodes.size() - 1; i >= 0; i--){
+						visited.add(visitedNodes.get(i).getName());
+					}
+					System.out.println(visited.toString());
+					// Defining the TextPane to be shown on the JPanels 
 					JTextPane txtpnShort = new JTextPane();
 					JTextPane txtpnFast = new JTextPane();
 					JTextPane txtpnAlter = new JTextPane();
+					JTextPane txtpnVia = new JTextPane();
+					txtpnVia.setBackground(SystemColor.controlHighlight);
+					txtpnVia.setText("The shortest route: " + begin + ", " + visited.toString());
 					txtpnShort.setBackground(SystemColor.controlHighlight);
-					txtpnShort.setText("Shortest route from " + begin + " to " + end + " takes: ");
+					// TODO: Find the distance in MILES and insert it in the text below.
+					txtpnShort.setText("Shortest route from " + begin + " to " + end + " takes: " + " miles.");
 					txtpnFast.setBackground(SystemColor.controlHighlight);
-					txtpnFast.setText("Fastest route from " + begin + " to " + end + " takes: ");
+					// TODO: Find the time in MINUTES and insert it in the text below.
+					txtpnFast.setText("Fastest route from " + begin + " to " + end + " takes: " + " minutes.");
 					txtpnAlter.setBackground(SystemColor.controlHighlight);
+					// TODO: Randomly gives another route to get from point A to point B. (Not shortest nor fastest).
 					txtpnAlter.setText("Alternative routes to get from " + begin + " to " + end + " takes: ");
+					// DISPLAY THE SHORTEST PATH 
+					GroupLayout gl_panelVia = new GroupLayout(panelVia);
+					gl_panelVia.setHorizontalGroup(
+						gl_panelVia.createParallelGroup(Alignment.LEADING)
+							.addGroup(gl_panelVia.createSequentialGroup()
+								.addContainerGap()
+								.addComponent(txtpnVia, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+								.addContainerGap())
+					);
+					gl_panelVia.setVerticalGroup(
+						gl_panelVia.createParallelGroup(Alignment.LEADING)
+							.addGroup(gl_panelVia.createSequentialGroup()
+								.addContainerGap()
+								.addComponent(txtpnVia, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+								.addContainerGap(79, Short.MAX_VALUE))
+					);
+					panelVia.setLayout(gl_panelVia);
 					
 					// CONDITIONS FOR DISPLAYING THE DIFFERENT INFORMATION ASKED BY USER
 					// Shortest Route selected ONLY
@@ -333,34 +389,14 @@ public class GUI {
 					}
 			}
 		});
+		
 
+		
 		/**
 		 * Trip Planner Panel: placing components on panel
 		 */
-		
-		JLabel lblDevelopedByElena = new JLabel("Developed by: Elena Chong, Tim McDaniel, and Mitchell Murray");
-		GroupLayout gl_panelTitle = new GroupLayout(panelTitle);
-		gl_panelTitle.setHorizontalGroup(
-			gl_panelTitle.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelTitle.createSequentialGroup()
-					.addGroup(gl_panelTitle.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelTitle.createSequentialGroup()
-							.addGap(96)
-							.addComponent(lblDevelopedByElena))
-						.addGroup(gl_panelTitle.createSequentialGroup()
-							.addGap(198)
-							.addComponent(lblTitle)))
-					.addContainerGap(249, Short.MAX_VALUE))
-		);
-		gl_panelTitle.setVerticalGroup(
-			gl_panelTitle.createParallelGroup(Alignment.LEADING)
-				.addGroup(Alignment.TRAILING, gl_panelTitle.createSequentialGroup()
-					.addComponent(lblTitle)
-					.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-					.addComponent(lblDevelopedByElena))
-		);
-		panelTitle.setLayout(gl_panelTitle);
-				
+
+		// TODO: Need to take the current location and find a place where the user wants to go based on minutes or miles given.	
 		JLabel lblHowLongDo = new JLabel("How long do you want to spend on the road?");
 		
 		JLabel lblTripPlanner = new JLabel("Trip Planner");
@@ -371,7 +407,7 @@ public class GUI {
 		textFieldMinutes.setText("in minutes");
 		textFieldMinutes.setColumns(10);
 		
-		JLabel lblYouWantTo = new JLabel("You want to travel but do not know where to go? Let us help you decide!");
+		JLabel lblYouWantTo = new JLabel("You want to explore Nevada but do not know where to go? Let us help you decide!");
 		
 		JLabel lblMinutes = new JLabel("minutes");
 		
@@ -399,6 +435,12 @@ public class GUI {
 //		chckbxInterestingPlace.setBackground(Color.LIGHT_GRAY);
 		
 		// If trip planner is selected, then enable all the options of this panel.
+		
+		JLabel lblCurrentLocation_1 = new JLabel("Current Location:");
+		lblCurrentLocation_1.setFont(new Font("Tahoma", Font.BOLD, 13));
+		
+		JComboBox comboBoxTripPlanner = new JComboBox(citiesArray.toArray());
+		comboBoxTripPlanner.setEnabled(false);
 		JCheckBox chckbxEnableTripPlanner = new JCheckBox("Enable Trip Planner");
 		chckbxEnableTripPlanner.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -408,13 +450,15 @@ public class GUI {
 					textFieldMiles.setEnabled(true);
 					textFieldMinutes.setEnabled(true);
 					btnExplore.setEnabled(true);
-
+					comboBoxTripPlanner.setEnabled(true);
 				}
 				else{
 //					chckbxInterestingPlace.setEnabled(false);
 //					chckbxCity.setEnabled(false);
 					textFieldMinutes.setEnabled(false);
 					textFieldMiles.setEnabled(false);
+					comboBoxTripPlanner.setEnabled(false);
+
 					btnExplore.setEnabled(false);
 
 				}
@@ -424,6 +468,7 @@ public class GUI {
 		chckbxEnableTripPlanner.setForeground(new Color(255, 255, 255));
 		chckbxEnableTripPlanner.setBackground(Color.LIGHT_GRAY);
 
+		
 		GroupLayout gl_panelTripPlanner = new GroupLayout(panelTripPlanner);
 		gl_panelTripPlanner.setHorizontalGroup(
 			gl_panelTripPlanner.createParallelGroup(Alignment.TRAILING)
@@ -435,8 +480,13 @@ public class GUI {
 							.addGap(95)
 							.addComponent(lblTripPlanner))
 						.addComponent(lblYouWantTo)
-						.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.TRAILING)
-							.addComponent(btnExplore)
+						.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.TRAILING, false)
+							.addGroup(gl_panelTripPlanner.createSequentialGroup()
+								.addComponent(lblCurrentLocation_1)
+								.addPreferredGap(ComponentPlacement.UNRELATED)
+								.addComponent(comboBoxTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+								.addComponent(btnExplore))
 							.addGroup(gl_panelTripPlanner.createSequentialGroup()
 								.addComponent(lblHowLongDo)
 								.addPreferredGap(ComponentPlacement.RELATED)
@@ -469,7 +519,10 @@ public class GUI {
 						.addComponent(lblMiles)
 						.addComponent(lblOr))
 					.addGap(18)
-					.addComponent(btnExplore)
+					.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.BASELINE)
+						.addComponent(btnExplore)
+						.addComponent(lblCurrentLocation_1)
+						.addComponent(comboBoxTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 					.addGap(12))
 		);
 		panelTripPlanner.setLayout(gl_panelTripPlanner);
@@ -477,6 +530,18 @@ public class GUI {
 		/**
 		 * Alternatives Route Panel
 		 */
+		
+		JButton btnClear = new JButton("Clear");
+		btnClear.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				panelResultBox.removeAll();
+				panelResultBox.updateUI();
+				panelAlternatives.removeAll();
+				panelAlternatives.updateUI();
+				panelVia.removeAll();
+				panelVia.updateUI();
+			}
+		});
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -491,24 +556,6 @@ public class GUI {
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(12)
 							.addComponent(lblFeatures))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(27)
-							.addComponent(chckbxShortestRoute)
-							.addGap(18)
-							.addComponent(chckbxFastestRoute)
-							.addGap(18)
-							.addComponent(chckbxAlternativeRoutes)
-							.addGap(18)
-							.addComponent(chckbxInterestingPlaces))
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(17)
-							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(panelAlternatives, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(panelResultBox, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE))
-							.addGap(30)
-							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-								.addComponent(chckbxShowMap)
-								.addComponent(btnSearch)))
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(17)
 							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
@@ -529,8 +576,30 @@ public class GUI {
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(1)
 							.addComponent(panelAddition, GroupLayout.PREFERRED_SIZE, 603, GroupLayout.PREFERRED_SIZE))
-						.addComponent(panelTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+						.addComponent(panelTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(27)
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(chckbxShortestRoute)
+									.addGap(18)
+									.addComponent(chckbxFastestRoute)
+									.addGap(18)
+									.addComponent(chckbxAlternativeRoutes)
+									.addGap(18)
+									.addComponent(chckbxInterestingPlaces))
+								.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+										.addComponent(panelVia, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+										.addComponent(panelAlternatives, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+										.addComponent(panelResultBox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addComponent(chckbxShowMap)
+										.addComponent(btnClear)
+										.addComponent(btnSearch))
+									.addGap(31)))))
+					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -570,21 +639,20 @@ public class GUI {
 						.addComponent(chckbxFastestRoute)
 						.addComponent(chckbxAlternativeRoutes)
 						.addComponent(chckbxInterestingPlaces))
-					.addGap(13)
+					.addGap(27)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(panelResultBox, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(14)
-							.addComponent(chckbxShowMap)))
-					.addGap(17)
+						.addComponent(panelResultBox, GroupLayout.PREFERRED_SIZE, 119, GroupLayout.PREFERRED_SIZE)
+						.addComponent(chckbxShowMap))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panelVia, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE)
+					.addGap(13)
 					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(panelAlternatives, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
-							.addGap(7))
+						.addComponent(panelAlternatives, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addComponent(btnSearch)
-							.addGap(18)))
-					.addPreferredGap(ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addComponent(btnClear)))
+					.addGap(18)
 					.addComponent(panelAddition, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 		);
 		frame.getContentPane().setLayout(groupLayout);
@@ -640,7 +708,7 @@ public class GUI {
 		txtInsertYCoord.setText("Insert Y coord");
 		txtInsertYCoord.setColumns(10);
 		
-		JLabel lblNotAvailableAt = new JLabel("Not available at the time");
+		JLabel lblNotAvailableAt = new JLabel("BECOME A PREMIUM USER!");
 		lblNotAvailableAt.setForeground(new Color(255, 0, 0));
 		lblNotAvailableAt.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
 		GroupLayout gl_panelAddition = new GroupLayout(panelAddition);
@@ -658,11 +726,9 @@ public class GUI {
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(txtMostInteresting, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addGap(55)
-							.addComponent(btnAdd))
-						.addGroup(gl_panelAddition.createSequentialGroup()
-							.addComponent(lblsubtitle)
-							.addGap(52)
-							.addComponent(lblNotAvailableAt))
+							.addComponent(btnAdd)
+							.addContainerGap(59, Short.MAX_VALUE))
+						.addComponent(lblsubtitle)
 						.addGroup(gl_panelAddition.createSequentialGroup()
 							.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_panelAddition.createSequentialGroup()
@@ -678,26 +744,28 @@ public class GUI {
 								.addGroup(gl_panelAddition.createSequentialGroup()
 									.addComponent(lblInsertCity)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+									.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+									.addComponent(lblNotAvailableAt)
+									.addGap(27))
 								.addGroup(gl_panelAddition.createSequentialGroup()
 									.addComponent(lblYCoordinate)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(txtInsertYCoord, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)))))
-					.addContainerGap(59, Short.MAX_VALUE))
+									.addComponent(txtInsertYCoord, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
+									.addContainerGap(0, Short.MAX_VALUE))))))
 		);
 		gl_panelAddition.setVerticalGroup(
 			gl_panelAddition.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_panelAddition.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblsubtitle)
-						.addComponent(lblNotAvailableAt))
+					.addComponent(lblsubtitle)
 					.addGap(18)
 					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblInsertState)
 						.addComponent(txtInsertState, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(lblInsertCity)
-						.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, 22, GroupLayout.PREFERRED_SIZE))
+						.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, 22, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblNotAvailableAt))
 					.addGap(27)
 					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblXCoordinate)
@@ -714,43 +782,50 @@ public class GUI {
 					.addContainerGap(40, Short.MAX_VALUE))
 		);
 		panelAddition.setLayout(gl_panelAddition);
-//		drawCities();
-
 	}
-//	
-//	public class testing extends JFrame{
-//		ArrayList<Graph.Node> nodesA = map.listRatings();
-//		
-//		public void paintComponent(Graphics g){
-//			int width = 10;
-//			int height = 10;
-//			super.paintComponents(g);
-////			Graphics g = frameTesting.getGraphics();
-//			g.setColor(Color.black);
-//			for(int i =0; i< nodesA.size(); i++){
-//				g.fillOval(nodesA.get(i).x, nodesA.get(i).y, width, height);
-//			}
-//		}
-//	}
-//	public void drawCities(){
-//		JFrame frameTesting = new JFrame("sd");
-//		int width = 10;
-//		int height = 10;
-//		frameTesting.setResizable(false);
-//		frameTesting.getContentPane().setForeground(Color.LIGHT_GRAY);
-//		frameTesting.getContentPane().setBackground(SystemColor.control);
-//		frameTesting.setBounds(100, 100, 600, 900);
-//		frameTesting.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		frameTesting.setVisible(true);
-//		ArrayList<Graph.Node> nodesA = map.listRatings();
-//		Graphics g = frameTesting.getGraphics();
-//		g.setColor(Color.black);
-////		g.fillOval(500, 500, width, height);
-//
-//		for(int i =0; i< nodesA.size(); i++){
-//			g.fillOval(nodesA.get(i).x, nodesA.get(i).y, width, height);
-//		}
-////		frameTesting.revalidate();
-////		frameTesting.repaint();
-//	}
+	
+	/**
+	 * 
+	 * The methods below are used for drawing the nodes on top of the Nevada map.
+	 * TODO: Make the drawing on top of nevada work.
+	 * TODO: Fix the nodes location to match the nevada map image.
+	 */
+	public void drawCities(){
+//		JFrame frameNevada = new JFrame("sd");
+		frameNevada = new JFrame("Nevada");
+		frameNevada.setResizable(false);
+		frameNevada.getContentPane().setForeground(Color.LIGHT_GRAY);
+		frameNevada.getContentPane().setBackground(Color.LIGHT_GRAY);
+		frameNevada.setBounds(100, 100, 500, 700);
+		frameNevada.setVisible(true);
+
+		BufferedImage image = null;
+		try {
+			image = ImageIO.read(new File("src\\nevadau.png"));
+		} catch (IOException exception) {
+			exception.printStackTrace();
+		}
+		JLabel picLabel = new JLabel(new ImageIcon(image));		
+		ArrayList<Graph.Node> nodesA = map.listRatings();
+		JPanel cityPanel = new CityPanel();
+		cityPanel.add(picLabel);
+		cityPanel.repaint();
+		frameNevada.getContentPane().add(cityPanel);
+		frameNevada.repaint();
+	}
+	
+	private class CityPanel extends JPanel{
+		ArrayList<Graph.Node> nodesA = map.listRatings();
+
+		@Override
+		public void paintComponent(Graphics g){
+			int width = 10;
+			int height = 10;
+			super.paintComponents(g);
+			g.setColor(Color.black);
+			for(int i =0; i< nodesA.size(); i++){
+				g.fillOval(nodesA.get(i).x, nodesA.get(i).y, width, height);
+			}
+		}
+	}
 }
