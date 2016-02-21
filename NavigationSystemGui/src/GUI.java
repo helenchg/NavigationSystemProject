@@ -93,7 +93,7 @@ public class GUI {
 					frameNevada.setBounds(100, 100, 550, 900);
 					JPanel panel2 = new JPanel();
 					panel2.setBackground(Color.GRAY);
-					frameNevada.add(panel2);
+					frameNevada.getContentPane().add(panel2);
 					// drawCities();
 					ArrayList<Graph.Node> nodes = new ArrayList<Graph.Node>();
 					JPanel panel = new JPanel() {
@@ -513,8 +513,6 @@ public class GUI {
 		textFieldMinutes.setColumns(10);
 		JLabel lblYouWantTo = new JLabel("You want to explore Nevada but do not know where to go? Let us help you decide!");
 		
-		JLabel lblMinutes = new JLabel("minutes");
-		
 		JLabel lblOr = new JLabel("or");
 		
 		textFieldMiles = new JTextField();
@@ -522,11 +520,19 @@ public class GUI {
 		textFieldMiles.setText("in miles");
 		textFieldMiles.setColumns(10);
 		
-		JLabel lblMiles = new JLabel("miles");
-		
 		JButton btnExplore = new JButton("Explore");
 		btnExplore.setEnabled(false);
 		
+		JCheckBox chckbxMiles = new JCheckBox("Miles");
+		chckbxMiles.setEnabled(false);
+		chckbxMiles.setBackground(Color.LIGHT_GRAY);
+		
+		JCheckBox chckbxMinutes = new JCheckBox("minutes");
+		chckbxMinutes.setEnabled(false);
+		chckbxMinutes.setBackground(Color.LIGHT_GRAY);
+
+		JButton btnSubmitSelection = new JButton("Submit Selection");
+		btnSubmitSelection.setEnabled(false);
 
 		// Extra features for trip planner >>> NOT IMPLEMENTED
 //		JLabel lblDoYouWant = new JLabel("Do you want to explore a city or an interesting place?");
@@ -551,28 +557,46 @@ public class GUI {
 		chckbxEnableTripPlanner.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				if(chckbxEnableTripPlanner.isSelected()){
-//					chckbxInterestingPlace.setEnabled(true);
-//					chckbxCity.setEnabled(true);
-					textFieldMiles.setEnabled(true);
-					textFieldMinutes.setEnabled(true);
-					btnExplore.setEnabled(true);
+					// Enable all the buttons needed when Trip Planner is enabled.
+					btnExplore.setEnabled(false);
 					comboBoxTripPlanner.setEnabled(true);
+					chckbxMiles.setEnabled(true);
+					chckbxMinutes.setEnabled(true);
+					btnSubmitSelection.setEnabled(true);
 					
-					btnExplore.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent arg0) {
-							int distance = 0;
-							int time = 0;
-							distance = Integer.parseInt(textFieldMiles.getText());
-//							time = Integer.parseInt(textFieldMinutes.getText());
-							String beginTrip = String.valueOf(comboBoxTripPlanner.getSelectedItem());
-								ArrayList<Graph.Node> tripNodes = map.distanceTripCreator(distance, beginTrip);
-								ArrayList<String> tripString = new ArrayList<>();
-								for (int k = tripNodes.size() - 1; k >=0; k--){
-									tripString.add(tripNodes.get(k).getName());
-								}
+					JTextPane tripPlanner = new JTextPane();
+					tripPlanner.setBackground(SystemColor.controlHighlight);
+					tripPlanner.setText("Select minutes or miles and click the 'Submit Selection' button.");
+					
+						GroupLayout gl_panelTrip = new GroupLayout(panelTrip);
+						gl_panelTrip.setHorizontalGroup(
+							gl_panelTrip.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panelTrip.createSequentialGroup()
+									.addContainerGap()
+									.addComponent(tripPlanner, GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+									.addContainerGap())
+						);
+						gl_panelTrip.setVerticalGroup(
+							gl_panelTrip.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panelTrip.createSequentialGroup()
+									.addContainerGap()
+									.addComponent(tripPlanner, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+									.addContainerGap(79, Short.MAX_VALUE))
+						);
+						panelTrip.setLayout(gl_panelTrip);
+				
+						// Submit Selection Button Action Listener
+					btnSubmitSelection.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) {
+							if(chckbxMiles.isSelected() || chckbxMinutes.isSelected()){
+								panelTrip.removeAll();
+								btnExplore.setEnabled(true);
+							}
+							else{
+								btnExplore.setEnabled(false);
 								JTextPane tripPlanner = new JTextPane();
 								tripPlanner.setBackground(SystemColor.controlHighlight);
-								tripPlanner.setText("Explore the following path: " + tripString);
+								tripPlanner.setText("Select either MINUTES or MILES CHECK BOX! and click the 'Submit Selection' button.");
 									GroupLayout gl_panelTrip = new GroupLayout(panelTrip);
 									gl_panelTrip.setHorizontalGroup(
 										gl_panelTrip.createParallelGroup(Alignment.LEADING)
@@ -589,6 +613,108 @@ public class GUI {
 												.addContainerGap(79, Short.MAX_VALUE))
 									);
 									panelTrip.setLayout(gl_panelTrip);
+							}
+							if(chckbxMiles.isSelected()){
+								textFieldMiles.setEnabled(true);
+								panelTrip.removeAll();
+								panelTrip.updateUI();
+							}
+							else{
+								textFieldMiles.setEnabled(false);
+							}
+							if(chckbxMinutes.isSelected()){
+								textFieldMinutes.setEnabled(true);
+								panelTrip.removeAll();
+								panelTrip.updateUI();
+							}
+							else{
+								textFieldMinutes.setEnabled(false);
+							}
+						}
+					});
+					
+					// Explore Button Action Listener does all the calculation.
+					btnExplore.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							int distance = 0;
+							int time = 0;
+							String beginTrip = String.valueOf(comboBoxTripPlanner.getSelectedItem());
+							if(chckbxMiles.isSelected()){
+								distance = Integer.parseInt(textFieldMiles.getText());
+								System.out.println("Miles: "+ distance + " Current Location: " + beginTrip);
+								
+								ArrayList<Graph.Node> tripNodes = map.distanceTripCreator(distance, beginTrip);
+								ArrayList<String> tripString = new ArrayList<>();
+								for (int k = tripNodes.size() - 1; k >=0; k--){
+									tripString.add(tripNodes.get(k).getName());
+								}
+								System.out.println("Trip Travel: " + tripString.toString());
+								JTextPane tripVia = new JTextPane();
+								tripVia.setBackground(SystemColor.controlHighlight);
+								tripVia.setText("These are the places you would go throught in your trip: " + tripString.toString());
+								JTextPane tripPlanner = new JTextPane();
+								tripPlanner.setBackground(SystemColor.controlHighlight);
+								tripPlanner.setText("Your current location is: " + beginTrip + ", and you want to drive for: " + distance + " miles.");					
+								
+								GroupLayout gl_panelTrip = new GroupLayout(panelTrip);
+								gl_panelTrip.setHorizontalGroup(
+									gl_panelTrip.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panelTrip.createSequentialGroup()
+											.addGap(12)
+											.addGroup(gl_panelTrip.createParallelGroup(Alignment.TRAILING)
+												.addComponent(tripPlanner, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+												.addComponent(tripVia))
+											.addContainerGap(306, Short.MAX_VALUE))
+								);
+								gl_panelTrip.setVerticalGroup(
+									gl_panelTrip.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panelTrip.createSequentialGroup()
+											.addContainerGap()
+											.addComponent(tripPlanner,GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(tripVia)
+											.addContainerGap(79, Short.MAX_VALUE))
+								);
+								panelTripPlanner.setLayout(gl_panelTrip);
+							}
+							else if(chckbxMinutes.isSelected()){
+								time = Integer.parseInt(textFieldMinutes.getText());
+								System.out.println("Miles: "+ distance + " Current Location: " + beginTrip);
+								
+								ArrayList<Graph.Node> tripNodes = map.timeTripCreator(time, beginTrip);
+								ArrayList<String> tripString = new ArrayList<>();
+								for (int k = tripNodes.size() - 1; k >=0; k--){
+									tripString.add(tripNodes.get(k).getName());
+								}
+								System.out.println("Trip Travel: " + tripString.toString());
+								JTextPane tripVia = new JTextPane();
+								tripVia.setBackground(SystemColor.controlHighlight);
+								tripVia.setText("These are the places you would go throught in your trip: " + tripString.toString());
+								JTextPane tripPlanner = new JTextPane();
+								tripPlanner.setBackground(SystemColor.controlHighlight);
+								tripPlanner.setText("Your current location is: " + beginTrip + ", and you want to drive for: " + time + " minutes.");
+								GroupLayout gl_panelTrip = new GroupLayout(panelTrip);
+								gl_panelTrip.setHorizontalGroup(
+									gl_panelTrip.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panelTrip.createSequentialGroup()
+											.addGap(12)
+											.addGroup(gl_panelTrip.createParallelGroup(Alignment.LEADING)
+												.addComponent(tripPlanner, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
+												.addComponent(tripVia))
+											.addContainerGap(306, Short.MAX_VALUE))
+								);
+								gl_panelTrip.setVerticalGroup(
+									gl_panelTrip.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_panelTrip.createSequentialGroup()
+											.addContainerGap()
+											.addComponent(tripPlanner,GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(tripVia)
+											.addContainerGap(79, Short.MAX_VALUE))
+								);
+								panelTripPlanner.setLayout(gl_panelTrip);
+								
+							}
 						}
 					});
 				}
@@ -598,13 +724,16 @@ public class GUI {
 					textFieldMinutes.setEnabled(false);
 					textFieldMiles.setEnabled(false);
 					comboBoxTripPlanner.setEnabled(false);
-
 					btnExplore.setEnabled(false);
+					btnSubmitSelection.setEnabled(false);
+					panelTrip.removeAll();
+					panelTrip.updateUI();
 
 				}
 			}
 		});
 		
+
 		chckbxEnableTripPlanner.setForeground(new Color(255, 255, 255));
 		chckbxEnableTripPlanner.setBackground(Color.LIGHT_GRAY);
 
@@ -619,26 +748,29 @@ public class GUI {
 							.addGap(95)
 							.addComponent(lblTripPlanner))
 						.addComponent(lblYouWantTo)
-						.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.TRAILING, false)
-							.addGroup(gl_panelTripPlanner.createSequentialGroup()
-								.addComponent(lblCurrentLocation_1)
-								.addPreferredGap(ComponentPlacement.UNRELATED)
-								.addComponent(comboBoxTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-								.addComponent(btnExplore))
-							.addGroup(gl_panelTripPlanner.createSequentialGroup()
-								.addComponent(lblHowLongDo)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(textFieldMinutes, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(lblMinutes)
-								.addGap(18)
-								.addComponent(lblOr)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(textFieldMiles, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(lblMiles))))
-					.addContainerGap(82, Short.MAX_VALUE))
+						.addGroup(gl_panelTripPlanner.createSequentialGroup()
+							.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_panelTripPlanner.createSequentialGroup()
+									.addComponent(lblHowLongDo)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(textFieldMinutes, GroupLayout.PREFERRED_SIZE, 66, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(chckbxMinutes))
+								.addGroup(gl_panelTripPlanner.createSequentialGroup()
+									.addComponent(lblCurrentLocation_1)
+									.addPreferredGap(ComponentPlacement.UNRELATED)
+									.addComponent(comboBoxTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+							.addGap(8)
+							.addComponent(lblOr)
+							.addGap(18)
+							.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.LEADING)
+								.addComponent(btnExplore)
+								.addComponent(btnSubmitSelection)
+								.addGroup(gl_panelTripPlanner.createSequentialGroup()
+									.addComponent(textFieldMiles, GroupLayout.PREFERRED_SIZE, 59, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(chckbxMiles)))))
+					.addContainerGap(22, Short.MAX_VALUE))
 		);
 		gl_panelTripPlanner.setVerticalGroup(
 			gl_panelTripPlanner.createParallelGroup(Alignment.LEADING)
@@ -653,16 +785,22 @@ public class GUI {
 					.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblHowLongDo)
 						.addComponent(textFieldMinutes, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblMinutes)
+						.addComponent(chckbxMinutes)
 						.addComponent(textFieldMiles, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblMiles)
+						.addComponent(chckbxMiles)
 						.addComponent(lblOr))
-					.addGap(18)
-					.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.BASELINE)
-						.addComponent(btnExplore)
-						.addComponent(lblCurrentLocation_1)
-						.addComponent(comboBoxTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(12))
+					.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_panelTripPlanner.createSequentialGroup()
+							.addGap(18)
+							.addGroup(gl_panelTripPlanner.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblCurrentLocation_1)
+								.addComponent(comboBoxTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+						.addGroup(gl_panelTripPlanner.createSequentialGroup()
+							.addGap(5)
+							.addComponent(btnSubmitSelection)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(btnExplore)))
+					.addContainerGap())
 		);
 		panelTripPlanner.setLayout(gl_panelTripPlanner);
 		
@@ -684,12 +822,10 @@ public class GUI {
 		
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
-			groupLayout.createParallelGroup(Alignment.LEADING)
+			groupLayout.createParallelGroup(Alignment.TRAILING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(4)
-							.addComponent(panelTitle, GroupLayout.PREFERRED_SIZE, 600, GroupLayout.PREFERRED_SIZE))
+						.addComponent(panelTripPlanner, 0, 0, Short.MAX_VALUE)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(17)
 							.addComponent(lblCurrentLocation))
@@ -716,40 +852,42 @@ public class GUI {
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(1)
 							.addComponent(panelAddition, GroupLayout.PREFERRED_SIZE, 603, GroupLayout.PREFERRED_SIZE))
-						.addComponent(panelTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(27)
-							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-								.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+										.addComponent(panelVia, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+										.addComponent(panelAlternatives, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
+										.addComponent(panelResultBox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addComponent(btnClear)
+										.addComponent(btnSearch)
+										.addComponent(chckbxShowMap))
+									.addGap(39))
+								.addGroup(groupLayout.createSequentialGroup()
 									.addComponent(chckbxShortestRoute)
 									.addGap(18)
 									.addComponent(chckbxFastestRoute)
 									.addGap(18)
 									.addComponent(chckbxAlternativeRoutes)
 									.addGap(18)
-									.addComponent(chckbxInterestingPlaces))
-								.addGroup(groupLayout.createSequentialGroup()
-									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-										.addComponent(panelVia, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-										.addComponent(panelAlternatives, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
-										.addComponent(panelResultBox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addComponent(chckbxShowMap)
-										.addComponent(btnClear)
-										.addComponent(btnSearch))
-									.addGap(31))))
+									.addComponent(chckbxInterestingPlaces))))
 						.addGroup(groupLayout.createSequentialGroup()
-							.addGap(31)
-							.addComponent(panelTrip, GroupLayout.PREFERRED_SIZE, 448, GroupLayout.PREFERRED_SIZE)))
+							.addGap(4)
+							.addComponent(panelTitle, GroupLayout.PREFERRED_SIZE, 600, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(26)
+							.addComponent(panelTrip, GroupLayout.PREFERRED_SIZE, 544, GroupLayout.PREFERRED_SIZE)))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addComponent(panelTitle, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(13)
-					.addComponent(panelTripPlanner, GroupLayout.PREFERRED_SIZE, 150, GroupLayout.PREFERRED_SIZE)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panelTripPlanner, GroupLayout.PREFERRED_SIZE, 167, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblCurrentLocation)
@@ -784,10 +922,11 @@ public class GUI {
 						.addComponent(chckbxInterestingPlaces))
 					.addGap(27)
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(panelResultBox, GroupLayout.PREFERRED_SIZE, 119, GroupLayout.PREFERRED_SIZE)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(panelResultBox, GroupLayout.PREFERRED_SIZE, 119, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(panelVia, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE))
 						.addComponent(chckbxShowMap))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(panelVia, GroupLayout.PREFERRED_SIZE, 107, GroupLayout.PREFERRED_SIZE)
 					.addGap(13)
 					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 						.addComponent(panelAlternatives, GroupLayout.PREFERRED_SIZE, 103, GroupLayout.PREFERRED_SIZE)
@@ -797,10 +936,20 @@ public class GUI {
 							.addComponent(btnClear)))
 					.addGap(18)
 					.addComponent(panelAddition, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(18)
-					.addComponent(panelTrip, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(22, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(panelTrip, GroupLayout.PREFERRED_SIZE, 128, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
+		GroupLayout gl_panelTrip = new GroupLayout(panelTrip);
+		gl_panelTrip.setHorizontalGroup(
+			gl_panelTrip.createParallelGroup(Alignment.TRAILING)
+				.addGap(0, 540, Short.MAX_VALUE)
+		);
+		gl_panelTrip.setVerticalGroup(
+			gl_panelTrip.createParallelGroup(Alignment.TRAILING)
+				.addGap(0, 124, Short.MAX_VALUE)
+		);
+		panelTrip.setLayout(gl_panelTrip);
 		frame.getContentPane().setLayout(groupLayout);
 		
 		/**
