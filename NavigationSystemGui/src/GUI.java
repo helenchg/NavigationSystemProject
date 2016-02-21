@@ -7,12 +7,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.ImageIcon;
@@ -88,9 +84,97 @@ public class GUI {
 		frameMap.getContentPane().addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if((e.getX() >= 105 && e.getX() <= 267) && (e.getY() >= 350 && e.getY() <= 500)){
+				if ((e.getX() >= 105 && e.getX() <= 267) && (e.getY() >= 350 && e.getY() <= 500)) {
 					System.out.println("X: " + e.getX() + "Y: " + e.getY());
-					drawCities();
+					frameNevada = new JFrame("Nevada");
+					frameNevada.setResizable(false);
+					frameNevada.getContentPane().setForeground(Color.LIGHT_GRAY);
+					frameNevada.getContentPane().setBackground(SystemColor.control);
+					frameNevada.setBounds(100, 100, 550, 900);
+					JPanel panel2 = new JPanel();
+					panel2.setBackground(Color.GRAY);
+					frameNevada.add(panel2);
+					// drawCities();
+					ArrayList<Graph.Node> nodes = new ArrayList<Graph.Node>();
+					JPanel panel = new JPanel() {
+						Graph.Node lastcur = map.nodes.get("Lake Tahoe Nevada State Park");
+
+						public void paintComponent(Graphics g) {
+							super.paintComponent(g);
+							g.setColor(Color.BLUE);
+							for (String current : map.nodes.keySet()) {
+								g.fillOval(map.nodes.get(current).x, map.nodes.get(current).y, 10, 10);
+								g.drawString(current, map.nodes.get(current).x, map.nodes.get(current).y);
+								for (int k = 0; k < map.nodes.get(current).edges.size(); k++) {
+									g.drawLine(map.nodes.get(current).x, map.nodes.get(current).y,
+											map.nodes.get(current).edges.get(k).end.x,
+											map.nodes.get(current).edges.get(k).end.y);
+								}
+								// }
+								lastcur = map.nodes.get(current);
+							}
+							System.out.println(map.nodes.get("Elko").dist + "ELKO DIST");
+							ArrayList<Graph.Node> nodesShortest = map.shortestPath(map.nodes.get(begin.toString()),
+									map.nodes.get(end.toString()));
+//							ArrayList<Graph.Node> nodesQuickest = map.quickestPath(map.nodes.get("Elko"),
+//									map.nodes.get("Elko"));
+							System.out.println(nodesShortest.size());
+							for (int i = 0; i < nodesShortest.size() - 1; i++) {
+								System.out.println(nodesShortest.get(i + 1).getName() + " connects to "
+										+ nodesShortest.get(i + 1).getName());
+								g.setColor(Color.YELLOW);
+								g.drawLine(nodesShortest.get(i).x, nodesShortest.get(i).y, nodesShortest.get(i + 1).x,
+										nodesShortest.get(i + 1).y);
+//								g.setColor(Color.RED);
+//								g.drawLine(nodesQuickest.get(i).x, nodesQuickest.get(i).y, nodesQuickest.get(i + 1).x,
+//										nodesQuickest.get(i + 1).y);
+							}
+						}
+					};
+//					panel.addMouseListener(new MouseListener() {
+//
+//						@Override
+//						public void mouseClicked(MouseEvent e) {
+//							
+//						}
+//
+//						@Override
+//						public void mouseEntered(MouseEvent e) {
+//							// TODO Auto-generated method stub
+//							
+//						}
+//
+//						@Override
+//						public void mouseExited(MouseEvent e) {
+//							// TODO Auto-generated method stub
+//							
+//						}
+//
+//						@Override
+//						public void mousePressed(MouseEvent e) {
+//							System.out.println("X: " + e.getX() + " Y: " + e.getY());						
+//						}
+//
+//						@Override
+//						public void mouseReleased(MouseEvent e) {
+//							// TODO Auto-generated method stub
+//							
+//						}});
+					panel.setBackground(new Color(0, 0, 0, 0));
+					ImageIcon imageNevada = new ImageIcon("src\\nevadaupdated.png");
+					JLabel nevadaLabel = new JLabel(imageNevada);
+					frameNevada.getContentPane().add(panel);
+					nevadaLabel.setBounds(10, 10, 500, 900);
+					//nevadaLabel.setVisible(true);
+					frameNevada.setVisible(true);
+					/*Graphics g = frameNevada.getGraphics();
+					g.setColor(Color.BLUE);
+					for(String current : map.nodes.keySet()){
+						g.drawOval(map.nodes.get(current).x, map.nodes.get(current).y, 20, 20);
+					}*/
+					frameNevada.getContentPane().add(nevadaLabel);
+					frameNevada.revalidate();
+					frameNevada.repaint();
 				}
 			}
 		});
@@ -152,7 +236,7 @@ public class GUI {
 		panelTripPlanner.setBackground(Color.LIGHT_GRAY);		
 		// Adding elements Panel. >>> NOT GOING TO BE IMPLEMENTED BECAUSE OF TIME CONSTRAINT
 		JPanel panelAddition = new JPanel();
-		panelAddition.setBackground(Color.LIGHT_GRAY);
+		panelAddition.setBackground(SystemColor.controlHighlight);
 		// Result Panel
 		JPanel panelResultBox = new JPanel();
 		panelResultBox.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
@@ -165,7 +249,10 @@ public class GUI {
 		JPanel panelVia = new JPanel();
 		panelVia.setBackground(SystemColor.controlHighlight);
 		panelVia.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		
+		// Panel for displaying trip planner results
+		JPanel panelTrip = new JPanel();
+		panelTrip.setBackground(SystemColor.controlHighlight);
+		panelTrip.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		
 		/**
 		 * This block below deals with the GUI part of selecting current location, destination and features.	
@@ -229,25 +316,36 @@ public class GUI {
 					
 					Graph.Node nodeA = map.nodes.get(begin);
 					Graph.Node nodeB = map.nodes.get(end);
-					ArrayList<Graph.Node> visitedNodes = map.shortestPath(nodeA, nodeB);
-					ArrayList<String> visited = new ArrayList<>();
-					for(int i = visitedNodes.size() - 1; i >= 0; i--){
-						visited.add(visitedNodes.get(i).getName());
+					ArrayList<Graph.Node> shortestNodes = map.shortestPath(nodeA, nodeB);
+					ArrayList<Graph.Node> fastestNodes = map.quickestPath(nodeA, nodeB);
+					int time = map.findDistance(shortestNodes);
+					int mile = map.findTime(fastestNodes);
+					ArrayList<String> shortestString = new ArrayList<>();
+					ArrayList<String> fastestString = new ArrayList<>();
+					for (int k = fastestNodes.size() - 1; k >=0; k--){
+						fastestString.add(fastestNodes.get(k).getName());
 					}
-					System.out.println(visited.toString());
+					for(int i = shortestNodes.size() - 1; i >= 0; i--){
+						shortestString.add(shortestNodes.get(i).getName());
+					}
+					System.out.println(shortestString.toString());
+					System.out.println(fastestString.toString());
+					// TODO: ELKO AND LAKE TAHOE SEEMS TO BE THE SAME NODE
 					// Defining the TextPane to be shown on the JPanels 
 					JTextPane txtpnShort = new JTextPane();
 					JTextPane txtpnFast = new JTextPane();
 					JTextPane txtpnAlter = new JTextPane();
 					JTextPane txtpnVia = new JTextPane();
+					JTextPane txtpnTime = new JTextPane();
 					txtpnVia.setBackground(SystemColor.controlHighlight);
-					txtpnVia.setText("The shortest route: " + begin + ", " + visited.toString());
+					txtpnVia.setText("The shortest route: " + begin + ", " + shortestString.toString());
+					txtpnTime.setBackground(SystemColor.controlHighlight);
+					txtpnTime.setText("The fastest route: " + begin + ", " + fastestString.toString());
 					txtpnShort.setBackground(SystemColor.controlHighlight);
-					// TODO: Find the distance in MILES and insert it in the text below.
-					txtpnShort.setText("Shortest route from " + begin + " to " + end + " takes: " + " miles.");
+					
+					txtpnShort.setText("Shortest route from " + begin + " to " + end + " takes: " + mile + " miles.");
 					txtpnFast.setBackground(SystemColor.controlHighlight);
-					// TODO: Find the time in MINUTES and insert it in the text below.
-					txtpnFast.setText("Fastest route from " + begin + " to " + end + " takes: " + " minutes.");
+					txtpnFast.setText("Fastest route from " + begin + " to " + end + " takes: " + time + " minutes.");
 					txtpnAlter.setBackground(SystemColor.controlHighlight);
 					// TODO: Randomly gives another route to get from point A to point B. (Not shortest nor fastest).
 					txtpnAlter.setText("Alternative routes to get from " + begin + " to " + end + " takes: ");
@@ -255,17 +353,24 @@ public class GUI {
 					GroupLayout gl_panelVia = new GroupLayout(panelVia);
 					gl_panelVia.setHorizontalGroup(
 						gl_panelVia.createParallelGroup(Alignment.LEADING)
-							.addGroup(gl_panelVia.createSequentialGroup()
-								.addContainerGap()
-								.addComponent(txtpnVia, GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
-								.addContainerGap())
+								.addGroup(gl_panelVia.createSequentialGroup()
+											.addGap(12)
+											.addGroup(gl_panelVia.createParallelGroup(Alignment.LEADING)
+												.addComponent(txtpnVia, GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+												.addComponent(txtpnTime))
+											.addContainerGap(306, Short.MAX_VALUE))
+
+
 					);
 					gl_panelVia.setVerticalGroup(
 						gl_panelVia.createParallelGroup(Alignment.LEADING)
 							.addGroup(gl_panelVia.createSequentialGroup()
-								.addContainerGap()
-								.addComponent(txtpnVia, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
-								.addContainerGap(79, Short.MAX_VALUE))
+											.addContainerGap()
+											.addComponent(txtpnVia,GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(txtpnTime)
+											.addContainerGap(79, Short.MAX_VALUE))
+								
 					);
 					panelVia.setLayout(gl_panelVia);
 					
@@ -288,7 +393,7 @@ public class GUI {
 									.addContainerGap(79, Short.MAX_VALUE))
 						);
 						panelResultBox.setLayout(gl_panelResultBox);
-					}				
+					}
 					// Fastest Route selected ONLY
 					else if(chckbxFastestRoute.isSelected()){
 						GroupLayout gl_panelResultBox = new GroupLayout(panelResultBox);
@@ -406,7 +511,6 @@ public class GUI {
 		textFieldMinutes.setEnabled(false);
 		textFieldMinutes.setText("in minutes");
 		textFieldMinutes.setColumns(10);
-		
 		JLabel lblYouWantTo = new JLabel("You want to explore Nevada but do not know where to go? Let us help you decide!");
 		
 		JLabel lblMinutes = new JLabel("minutes");
@@ -423,6 +527,7 @@ public class GUI {
 		JButton btnExplore = new JButton("Explore");
 		btnExplore.setEnabled(false);
 		
+
 		// Extra features for trip planner >>> NOT IMPLEMENTED
 //		JLabel lblDoYouWant = new JLabel("Do you want to explore a city or an interesting place?");
 		
@@ -440,6 +545,7 @@ public class GUI {
 		lblCurrentLocation_1.setFont(new Font("Tahoma", Font.BOLD, 13));
 		
 		JComboBox comboBoxTripPlanner = new JComboBox(citiesArray.toArray());
+		
 		comboBoxTripPlanner.setEnabled(false);
 		JCheckBox chckbxEnableTripPlanner = new JCheckBox("Enable Trip Planner");
 		chckbxEnableTripPlanner.addActionListener(new ActionListener() {
@@ -451,6 +557,40 @@ public class GUI {
 					textFieldMinutes.setEnabled(true);
 					btnExplore.setEnabled(true);
 					comboBoxTripPlanner.setEnabled(true);
+					
+					btnExplore.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent arg0) {
+							int distance = 0;
+							int time = 0;
+							distance = Integer.parseInt(textFieldMiles.getText());
+//							time = Integer.parseInt(textFieldMinutes.getText());
+							String beginTrip = String.valueOf(comboBoxTripPlanner.getSelectedItem());
+								ArrayList<Graph.Node> tripNodes = map.distanceTripCreator(distance, beginTrip);
+								ArrayList<String> tripString = new ArrayList<>();
+								for (int k = tripNodes.size() - 1; k >=0; k--){
+									tripString.add(tripNodes.get(k).getName());
+								}
+								JTextPane tripPlanner = new JTextPane();
+								tripPlanner.setBackground(SystemColor.controlHighlight);
+								tripPlanner.setText("Explore the following path: " + tripString);
+									GroupLayout gl_panelTrip = new GroupLayout(panelTrip);
+									gl_panelTrip.setHorizontalGroup(
+										gl_panelTrip.createParallelGroup(Alignment.LEADING)
+											.addGroup(gl_panelTrip.createSequentialGroup()
+												.addContainerGap()
+												.addComponent(tripPlanner, GroupLayout.DEFAULT_SIZE, 372, Short.MAX_VALUE)
+												.addContainerGap())
+									);
+									gl_panelTrip.setVerticalGroup(
+										gl_panelTrip.createParallelGroup(Alignment.LEADING)
+											.addGroup(gl_panelTrip.createSequentialGroup()
+												.addContainerGap()
+												.addComponent(tripPlanner, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+												.addContainerGap(79, Short.MAX_VALUE))
+									);
+									panelTrip.setLayout(gl_panelTrip);
+						}
+					});
 				}
 				else{
 //					chckbxInterestingPlace.setEnabled(false);
@@ -468,7 +608,6 @@ public class GUI {
 		chckbxEnableTripPlanner.setForeground(new Color(255, 255, 255));
 		chckbxEnableTripPlanner.setBackground(Color.LIGHT_GRAY);
 
-		
 		GroupLayout gl_panelTripPlanner = new GroupLayout(panelTripPlanner);
 		gl_panelTripPlanner.setHorizontalGroup(
 			gl_panelTripPlanner.createParallelGroup(Alignment.TRAILING)
@@ -542,6 +681,7 @@ public class GUI {
 				panelVia.updateUI();
 			}
 		});
+		
 		GroupLayout groupLayout = new GroupLayout(frame.getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
@@ -579,8 +719,8 @@ public class GUI {
 						.addComponent(panelTripPlanner, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addGroup(groupLayout.createSequentialGroup()
 							.addGap(27)
-							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-								.addGroup(groupLayout.createSequentialGroup()
+							.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+								.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
 									.addComponent(chckbxShortestRoute)
 									.addGap(18)
 									.addComponent(chckbxFastestRoute)
@@ -588,17 +728,20 @@ public class GUI {
 									.addComponent(chckbxAlternativeRoutes)
 									.addGap(18)
 									.addComponent(chckbxInterestingPlaces))
-								.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
+								.addGroup(groupLayout.createSequentialGroup()
 									.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-										.addComponent(panelVia, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
-										.addComponent(panelAlternatives, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE)
-										.addComponent(panelResultBox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
+										.addComponent(panelVia, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+										.addComponent(panelAlternatives, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+										.addComponent(panelResultBox, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE))
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 										.addComponent(chckbxShowMap)
 										.addComponent(btnClear)
 										.addComponent(btnSearch))
-									.addGap(31)))))
+									.addGap(31))))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(31)
+							.addComponent(panelTrip, GroupLayout.PREFERRED_SIZE, 448, GroupLayout.PREFERRED_SIZE)))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
@@ -634,7 +777,7 @@ public class GUI {
 					.addGap(18)
 					.addComponent(lblFeatures)
 					.addGap(9)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
 						.addComponent(chckbxShortestRoute)
 						.addComponent(chckbxFastestRoute)
 						.addComponent(chckbxAlternativeRoutes)
@@ -653,166 +796,140 @@ public class GUI {
 							.addPreferredGap(ComponentPlacement.UNRELATED)
 							.addComponent(btnClear)))
 					.addGap(18)
-					.addComponent(panelAddition, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addComponent(panelAddition, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(18)
+					.addComponent(panelTrip, GroupLayout.PREFERRED_SIZE, 117, GroupLayout.PREFERRED_SIZE)
+					.addContainerGap(22, Short.MAX_VALUE))
 		);
 		frame.getContentPane().setLayout(groupLayout);
 		
 		/**
 		 * Adding elements to our files. TODO: ADDING STUFF / NOT IMPLEMENTED
 		 */
-		JLabel lblsubtitle = new JLabel("Cannot find the location? Help us add it to the map! ");
-		lblsubtitle.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
-		
-		JLabel lblInsertCity = new JLabel("City:");
-		
-		txtInsertCity = new JTextField();
-		txtInsertCity.setEnabled(false);
-		txtInsertCity.setText("Insert City");
-		txtInsertCity.setColumns(10);
-		
-		JLabel lblInsertState = new JLabel("State:");
-		
-		txtInsertState = new JTextField();
-		txtInsertState.setEnabled(false);
-		txtInsertState.setText("Insert State");
-		txtInsertState.setColumns(10);
-		
-		JButton btnAdd = new JButton("Add");
-		btnAdd.setEnabled(false);
-		
-		JLabel lblInterestingPlace = new JLabel("Interesting place:");
-		
-		txtInsertPlace = new JTextField();
-		txtInsertPlace.setEnabled(false);
-		txtInsertPlace.setText("Insert place");
-		txtInsertPlace.setColumns(10);
-		
-		JLabel lblRanking = new JLabel("Ranking:");
-		
-		txtMostInteresting = new JTextField();
-		txtMostInteresting.setEnabled(false);
-		txtMostInteresting.setText("5 most interesting - 0 less interesting");
-		txtMostInteresting.setColumns(10);
-		
-		JLabel lblXCoordinate = new JLabel("X coordinate:");
-		
-		JLabel lblYCoordinate = new JLabel("Y coordinate:");
-		
-		txtInsertXCoord = new JTextField();
-		txtInsertXCoord.setEnabled(false);
-		txtInsertXCoord.setText("Insert X coord");
-		txtInsertXCoord.setColumns(10);
-		
-		txtInsertYCoord = new JTextField();
-		txtInsertYCoord.setEnabled(false);
-		txtInsertYCoord.setText("Insert Y coord");
-		txtInsertYCoord.setColumns(10);
-		
-		JLabel lblNotAvailableAt = new JLabel("BECOME A PREMIUM USER!");
-		lblNotAvailableAt.setForeground(new Color(255, 0, 0));
-		lblNotAvailableAt.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
-		GroupLayout gl_panelAddition = new GroupLayout(panelAddition);
-		gl_panelAddition.setHorizontalGroup(
-			gl_panelAddition.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelAddition.createSequentialGroup()
-					.addGap(24)
-					.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_panelAddition.createSequentialGroup()
-							.addComponent(lblInterestingPlace)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(txtInsertPlace, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(18)
-							.addComponent(lblRanking)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(txtMostInteresting, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addGap(55)
-							.addComponent(btnAdd)
-							.addContainerGap(59, Short.MAX_VALUE))
-						.addComponent(lblsubtitle)
-						.addGroup(gl_panelAddition.createSequentialGroup()
-							.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelAddition.createSequentialGroup()
-									.addComponent(lblInsertState)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(txtInsertState, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-								.addGroup(gl_panelAddition.createSequentialGroup()
-									.addComponent(lblXCoordinate)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(txtInsertXCoord, GroupLayout.PREFERRED_SIZE, 92, GroupLayout.PREFERRED_SIZE)))
-							.addGap(29)
-							.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_panelAddition.createSequentialGroup()
-									.addComponent(lblInsertCity)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-									.addPreferredGap(ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
-									.addComponent(lblNotAvailableAt)
-									.addGap(27))
-								.addGroup(gl_panelAddition.createSequentialGroup()
-									.addComponent(lblYCoordinate)
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(txtInsertYCoord, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
-									.addContainerGap(0, Short.MAX_VALUE))))))
-		);
-		gl_panelAddition.setVerticalGroup(
-			gl_panelAddition.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_panelAddition.createSequentialGroup()
-					.addContainerGap()
-					.addComponent(lblsubtitle)
-					.addGap(18)
-					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblInsertState)
-						.addComponent(txtInsertState, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblInsertCity)
-						.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, 22, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblNotAvailableAt))
-					.addGap(27)
-					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblXCoordinate)
-						.addComponent(txtInsertXCoord, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblYCoordinate)
-						.addComponent(txtInsertYCoord, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addGap(18)
-					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblInterestingPlace)
-						.addComponent(txtInsertPlace, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblRanking)
-						.addComponent(txtMostInteresting, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(btnAdd))
-					.addContainerGap(40, Short.MAX_VALUE))
-		);
-		panelAddition.setLayout(gl_panelAddition);
+//		JLabel lblsubtitle = new JLabel("Cannot find the location? Help us add it to the map! ");
+//		lblsubtitle.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
+//		
+//		JLabel lblInsertCity = new JLabel("City:");
+//		
+//		txtInsertCity = new JTextField();
+//		txtInsertCity.setEnabled(false);
+//		txtInsertCity.setText("Insert City");
+//		txtInsertCity.setColumns(10);
+//		
+//		JLabel lblInsertState = new JLabel("State:");
+//		
+//		txtInsertState = new JTextField();
+//		txtInsertState.setEnabled(false);
+//		txtInsertState.setText("Insert State");
+//		txtInsertState.setColumns(10);
+//		
+//		JButton btnAdd = new JButton("Add");
+//		btnAdd.setEnabled(false);
+//		
+//		JLabel lblInterestingPlace = new JLabel("Interesting place:");
+//		
+//		txtInsertPlace = new JTextField();
+//		txtInsertPlace.setEnabled(false);
+//		txtInsertPlace.setText("Insert place");
+//		txtInsertPlace.setColumns(10);
+//		
+//		JLabel lblRanking = new JLabel("Ranking:");
+//		
+//		txtMostInteresting = new JTextField();
+//		txtMostInteresting.setEnabled(false);
+//		txtMostInteresting.setText("5 most interesting - 0 less interesting");
+//		txtMostInteresting.setColumns(10);
+//		
+//		JLabel lblXCoordinate = new JLabel("X coordinate:");
+//		
+//		JLabel lblYCoordinate = new JLabel("Y coordinate:");
+//		
+//		txtInsertXCoord = new JTextField();
+//		txtInsertXCoord.setEnabled(false);
+//		txtInsertXCoord.setText("Insert X coord");
+//		txtInsertXCoord.setColumns(10);
+//		
+//		txtInsertYCoord = new JTextField();
+//		txtInsertYCoord.setEnabled(false);
+//		txtInsertYCoord.setText("Insert Y coord");
+//		txtInsertYCoord.setColumns(10);
+//		
+//		JLabel lblNotAvailableAt = new JLabel("BECOME A PREMIUM USER!");
+//		lblNotAvailableAt.setForeground(new Color(255, 0, 0));
+//		lblNotAvailableAt.setFont(new Font("Tahoma", Font.BOLD | Font.ITALIC, 13));
+//		GroupLayout gl_panelAddition = new GroupLayout(panelAddition);
+//		gl_panelAddition.setHorizontalGroup(
+//			gl_panelAddition.createParallelGroup(Alignment.LEADING)
+//				.addGroup(gl_panelAddition.createSequentialGroup()
+//					.addGap(24)
+//					.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
+//						.addGroup(gl_panelAddition.createSequentialGroup()
+//							.addComponent(lblInterestingPlace)
+//							.addPreferredGap(ComponentPlacement.RELATED)
+//							.addComponent(txtInsertPlace, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//							.addGap(18)
+//							.addComponent(lblRanking)
+//							.addPreferredGap(ComponentPlacement.RELATED)
+//							.addComponent(txtMostInteresting, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//							.addGap(55)
+//							.addComponent(btnAdd)
+//							.addContainerGap(59, Short.MAX_VALUE))
+//						.addComponent(lblsubtitle)
+//						.addGroup(gl_panelAddition.createSequentialGroup()
+//							.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
+//								.addGroup(gl_panelAddition.createSequentialGroup()
+//									.addComponent(lblInsertState)
+//									.addPreferredGap(ComponentPlacement.RELATED)
+//									.addComponent(txtInsertState, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+//								.addGroup(gl_panelAddition.createSequentialGroup()
+//									.addComponent(lblXCoordinate)
+//									.addPreferredGap(ComponentPlacement.RELATED)
+//									.addComponent(txtInsertXCoord, GroupLayout.PREFERRED_SIZE, 92, GroupLayout.PREFERRED_SIZE)))
+//							.addGap(29)
+//							.addGroup(gl_panelAddition.createParallelGroup(Alignment.LEADING)
+//								.addGroup(gl_panelAddition.createSequentialGroup()
+//									.addComponent(lblInsertCity)
+//									.addPreferredGap(ComponentPlacement.RELATED)
+//									.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//									.addPreferredGap(ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
+//									.addComponent(lblNotAvailableAt)
+//									.addGap(27))
+//								.addGroup(gl_panelAddition.createSequentialGroup()
+//									.addComponent(lblYCoordinate)
+//									.addPreferredGap(ComponentPlacement.RELATED)
+//									.addComponent(txtInsertYCoord, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
+//									.addContainerGap(0, Short.MAX_VALUE))))))
+//		);
+//		gl_panelAddition.setVerticalGroup(
+//			gl_panelAddition.createParallelGroup(Alignment.LEADING)
+//				.addGroup(gl_panelAddition.createSequentialGroup()
+//					.addContainerGap()
+//					.addComponent(lblsubtitle)
+//					.addGap(18)
+//					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
+//						.addComponent(lblInsertState)
+//						.addComponent(txtInsertState, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//						.addComponent(lblInsertCity)
+//						.addComponent(txtInsertCity, GroupLayout.PREFERRED_SIZE, 22, GroupLayout.PREFERRED_SIZE)
+//						.addComponent(lblNotAvailableAt))
+//					.addGap(27)
+//					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
+//						.addComponent(lblXCoordinate)
+//						.addComponent(txtInsertXCoord, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//						.addComponent(lblYCoordinate)
+//						.addComponent(txtInsertYCoord, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+//					.addGap(18)
+//					.addGroup(gl_panelAddition.createParallelGroup(Alignment.BASELINE)
+//						.addComponent(lblInterestingPlace)
+//						.addComponent(txtInsertPlace, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//						.addComponent(lblRanking)
+//						.addComponent(txtMostInteresting, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+//						.addComponent(btnAdd))
+//					.addContainerGap(40, Short.MAX_VALUE))
+//		);
+//		panelAddition.setLayout(gl_panelAddition);
 	}
-	
-	/**
-	 * 
-	 * The methods below are used for drawing the nodes on top of the Nevada map.
-	 * TODO: Make the drawing on top of nevada work.
-	 * TODO: Fix the nodes location to match the nevada map image.
-	 */
-	public void drawCities(){
-//		JFrame frameNevada = new JFrame("sd");
-		frameNevada = new JFrame("Nevada");
-		frameNevada.setResizable(false);
-		frameNevada.getContentPane().setForeground(Color.LIGHT_GRAY);
-		frameNevada.getContentPane().setBackground(Color.LIGHT_GRAY);
-		frameNevada.setBounds(100, 100, 500, 700);
-		frameNevada.setVisible(true);
 
-		BufferedImage image = null;
-		try {
-			image = ImageIO.read(new File("src\\nevadau.png"));
-		} catch (IOException exception) {
-			exception.printStackTrace();
-		}
-		JLabel picLabel = new JLabel(new ImageIcon(image));		
-		ArrayList<Graph.Node> nodesA = map.listRatings();
-		JPanel cityPanel = new CityPanel();
-		cityPanel.add(picLabel);
-		cityPanel.repaint();
-		frameNevada.getContentPane().add(cityPanel);
-		frameNevada.repaint();
-	}
 	
 	private class CityPanel extends JPanel{
 		ArrayList<Graph.Node> nodesA = map.listRatings();

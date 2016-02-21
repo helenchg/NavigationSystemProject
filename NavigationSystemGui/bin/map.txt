@@ -155,8 +155,8 @@ X
 Great Basin National Park
 4.5
 2
-250
 450
+250
 Lehman Cave
 Elko
 X
@@ -216,8 +216,8 @@ X
 Lehman Cave
 2.2
 2
-250
 475
+250
 Great Basin National Park
 Elko
 Reno

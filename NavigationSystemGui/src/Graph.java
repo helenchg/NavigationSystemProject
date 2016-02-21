@@ -97,17 +97,19 @@ public class Graph {
 		int y1 = firstNode.y;
 		int x2 = secondNode.x;
 		int y2 = secondNode.y;
-		return (int) Math.ceil(Math.sqrt((x1 - x2) ^ 2 + (y1 - y2) ^ 2));
+		return (int) Math.ceil(Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)));
 	}
 
 	private int time(Node firstNode, Node secondNode, int distance) {
-		if (firstNode.cost == 1 && secondNode.cost == 1)
-			return distance * HIGHWAY_SPEED;
+		if (firstNode.cost == 1 && secondNode.cost == 1){
+			return (int) distance / HIGHWAY_SPEED;
+		}
 
-		if ((firstNode.cost == 1 && secondNode.cost == 2) || (firstNode.cost == 2 && secondNode.cost == 1))
-			return distance * SUBURB_SPEED;
+		if ((firstNode.cost == 1 && secondNode.cost == 2) || (firstNode.cost == 2 && secondNode.cost == 1)){
+			return (int) distance / SUBURB_SPEED;
+		}
 
-		return distance * COUNTRY_ROAD_SPEED;
+		return (int) distance / COUNTRY_ROAD_SPEED;
 	}
 
 	public class Node {
@@ -120,6 +122,8 @@ public class Graph {
 		public int y;
 		public ArrayList<String> connections = new ArrayList<String>();
 		public ArrayList<Edge> edges = new ArrayList<Edge>();
+		private int tripDistLeftOver = Integer.MAX_VALUE;
+		private int tripTimeLeftOver = Integer.MAX_VALUE;
 
 		public Node(String name) {
 			this.dist = Integer.MAX_VALUE;
@@ -164,11 +168,43 @@ public class Graph {
 			return;
 		}
 
+		public ArrayList<Node> distTrip(int remainingDistance) {
+			this.tripDistLeftOver = remainingDistance;
+			ArrayList<Node> currentBest = new ArrayList<Node>();
+			for(Edge current : edges){
+				if(current.distance<remainingDistance){
+					ArrayList<Node> temp = current.end.distTrip(remainingDistance-current.distance);         
+					if(current.end.tripDistLeftOver<this.tripDistLeftOver){
+						this.tripDistLeftOver = current.end.tripDistLeftOver;
+						currentBest = temp;
+					}
+				}
+			}
+			
+			return currentBest;
+		}
+		
+		public ArrayList<Node> timeTrip(int remainingTime) {
+			this.tripTimeLeftOver = remainingTime;
+			ArrayList<Node> currentBest = new ArrayList<Node>();
+			for(Edge current : edges){
+				if(current.distance<remainingTime){
+					ArrayList<Node> temp = current.end.timeTrip(remainingTime-current.distance);         
+					if(current.end.tripTimeLeftOver<this.tripTimeLeftOver){
+						this.tripTimeLeftOver = current.end.tripTimeLeftOver;
+						currentBest = temp;
+					}
+				}
+			}
+			
+			return currentBest;
+		}
+
 	}
 
 	public class Edge {
 
-		private Node start;
+		public Node start;
 		public Node end;
 		public int distance;
 		public int time;
@@ -225,5 +261,85 @@ public class Graph {
 		}
 		return a;
 	}
-
+	
+	public ArrayList<Node> quickestPath(Node starting, Node ending) {
+		starting.dist = 0;
+		LinkedList<Node> nodes = new LinkedList<Node>();
+		nodes.add(starting);
+		int tempCost = 0;
+		Edge tempEdge = null;
+		Node tempNode = null;
+		ArrayList<Node> a = new ArrayList<Node>();
+		while (!nodes.isEmpty()) {
+			Node cur = nodes.remove();
+			for (int i = 0; i < cur.edges.size(); i++) {
+				tempEdge = cur.edges.get(i);
+				tempNode = tempEdge.end;
+				tempCost = tempEdge.time;
+				int comparableDist = cur.dist + tempCost;
+				if (comparableDist < tempNode.dist) {
+					nodes.remove(tempNode);
+					tempNode.dist = comparableDist;
+					tempNode.last = cur;
+					nodes.add(tempNode);
+				}
+			}
+			cur = ending;
+			while(cur.last!=null){
+//				System.out.println(cur.name);
+				a.add(cur);
+				cur = cur.last;
+			}
+		}
+		return a;
+	}
+	
+	public int findDistance(ArrayList<Node> input){
+		int output = 0;
+		
+		for(int i=0; i<input.size() - 1; i++){
+			for(Edge currentEdge: input.get(i).edges){
+				if(currentEdge.end.equals(input.get(i+1))){
+					output = output + currentEdge.distance;
+				}
+			}
+		}
+		return output;
+	}
+	
+	public int findTime(ArrayList<Node> input){
+		int output = 0;
+		
+		for(int i=0; i<input.size() - 1; i++){
+			for(Edge currentEdge: input.get(i).edges){
+				if(currentEdge.end.equals(input.get(i+1))){
+					output = output + currentEdge.time;
+				}
+			}
+		}
+		return output;
+	}
+	
+	public ArrayList<Node> distanceTripCreator(int distance, String start){
+		ArrayList<Node> output = new ArrayList<Node>();
+		
+		output = nodes.get(start).distTrip(distance);
+		int length = output.size();
+		for(int i = length - 2; i>=0; i--){
+			output.add(output.get(i));
+		}
+		return output;
+		
+	}
+	public ArrayList<Node> timeTripCreator(int time, String start){
+		ArrayList<Node> output = new ArrayList<Node>();
+		
+		output = nodes.get(start).timeTrip(time);
+		int length = output.size();
+		for(int i = length - 2; i>=0; i--){
+			output.add(output.get(i));
+		}
+		return output;
+		
+	}
 }
