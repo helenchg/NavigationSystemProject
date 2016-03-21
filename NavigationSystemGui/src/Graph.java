@@ -53,7 +53,6 @@ public class Graph {
 				}
 				line = mapFile.readLine();
 				line = mapFile.readLine();
-				// System.out.println(newNode.name);
 				nodes.put(newNode.getName(), newNode);
 			}
 
@@ -70,9 +69,7 @@ public class Graph {
 				current.addEdge(new Edge(current, nodes.get(current.connections.get(j)), distance, time));
 			}
 		}
-
 		System.out.println("beep");
-		// insert more delicious code here.
 	}
 
 	/**
@@ -379,7 +376,6 @@ public class Graph {
                }
                cur = ending;
                while(cur.last!=null){
-//                    System.out.println(cur.name);
                       a.add(cur);
                       cur = cur.last;
                }
